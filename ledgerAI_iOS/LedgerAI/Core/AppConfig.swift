@@ -10,6 +10,9 @@ enum AppConfig {
         return URL(string: "https://www.ledgerai.click")!
     }()
 
+    static let privacyURL = URL(string: "https://www.ledgerai.click/privacy")!
+    static let supportURL = URL(string: "https://www.ledgerai.click/support")!
+
     static let cognitoRegion = "us-east-1"
 
     /// App client created for iOS by ledgerAI_terraform (`terraform output cognito_ios_client_id`).

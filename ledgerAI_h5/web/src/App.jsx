@@ -6,6 +6,7 @@ import Home from './pages/Home.jsx';
 import Account from './pages/Account.jsx';
 import RegionSetup from './pages/RegionSetup.jsx';
 import Privacy from './pages/Privacy.jsx';
+import Support from './pages/Support.jsx';
 import { ChartIcon, HomeIcon, PersonIcon } from './components/Icons.jsx';
 
 const Analytics = lazy(() => import('./pages/Analytics.jsx')); // keeps recharts out of the initial bundle
@@ -89,6 +90,7 @@ const Admin = lazy(() => import('./pages/Admin.jsx')); // separate chunk: admins
 export default function App() {
   const path = window.location.pathname.replace(/\/+$/, '');
   if (path === '/privacy') return <Privacy />;
+  if (path === '/support') return <Support />;
   const isAdminPage = path === '/admin';
   if (!isAdminPage) return <MainApp />;
   return (

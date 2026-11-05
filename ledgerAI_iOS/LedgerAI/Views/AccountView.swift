@@ -18,6 +18,7 @@ struct AccountView: View {
                 accountSection
                 securitySection
                 dataSection
+                aboutSection
 
                 Section {
                     Button("Sign Out", role: .destructive) { showSignOutConfirm = true }
@@ -158,6 +159,18 @@ struct AccountView: View {
             .foregroundStyle(.primary)
             .disabled(vm.exporting)
         }
+    }
+
+    private var aboutSection: some View {
+        Section("About") {
+            Link(destination: AppConfig.privacyURL) {
+                IconLabel("Privacy Policy", symbol: "hand.raised.fill", color: .blue)
+            }
+            Link(destination: AppConfig.supportURL) {
+                IconLabel("Help & Support", symbol: "questionmark.circle.fill", color: .gray)
+            }
+        }
+        .foregroundStyle(.primary)
     }
 
     // MARK: Helpers
