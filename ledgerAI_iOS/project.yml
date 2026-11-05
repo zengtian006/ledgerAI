@@ -1,0 +1,98 @@
+name: LedgerAI
+
+options:
+  bundleIdPrefix: click.ledgerai
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: W5ZUHEYQT3
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+
+targets:
+  LedgerAI:
+    type: application
+    platform: iOS
+    sources:
+      - LedgerAI
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: click.ledgerai.app
+        TARGETED_DEVICE_FAMILY: "1"
+        SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: LedgerAI
+        INFOPLIST_KEY_CFBundleIconName: AppIcon
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.finance
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        INFOPLIST_KEY_NSFaceIDUsageDescription: LedgerAI uses Face ID to keep your receipts and spending private when you open the app.
+        INFOPLIST_KEY_NSCameraUsageDescription: LedgerAI uses the camera to photograph your receipts so they can be read automatically.
+    info:
+      path: LedgerAI/Info.plist
+      properties:
+        # Lets the Debug "Local API" scheme talk to http://localhost:4000
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+
+  LedgerAITests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - LedgerAITests
+    dependencies:
+      - target: LedgerAI
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: click.ledgerai.app.tests
+
+  LedgerAIUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - LedgerAIUITests
+    dependencies:
+      - target: LedgerAI
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: click.ledgerai.app.uitests
+
+schemes:
+  LedgerAI:
+    build:
+      targets:
+        LedgerAI: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - LedgerAITests
+        - LedgerAIUITests
+    archive:
+      config: Release
+
+  # Runs against the local dev API (api/ with AUTH_MODE=local) instead of production
+  LedgerAI-LocalAPI:
+    build:
+      targets:
+        LedgerAI: all
+    run:
+      config: Debug
+      environmentVariables:
+        LEDGER_API_URL: http://localhost:4000
+        LEDGER_AUTH_MODE: local

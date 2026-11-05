@@ -1,0 +1,45 @@
+# Runs the whole stack on one EC2 instance: docker compose up -d --build
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ledger
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ledgerai
+    volumes:
+      - pgdata:/var/lib/postgresql/data   # mount an EBS volume at /var/lib/docker for durability
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ledger -d ledgerai"]
+      interval: 5s
+      retries: 10
+
+  api:
+    build: ./api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://ledger:${POSTGRES_PASSWORD}@db:5432/ledgerai
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:?set GEMINI_API_KEY in .env}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash}
+      GEMINI_FALLBACK_MODEL: ${GEMINI_FALLBACK_MODEL:-gemini-3.5-flash-lite}
+      STORAGE_DRIVER: s3
+      S3_BUCKET: ${S3_BUCKET:?set S3_BUCKET in .env}
+      AWS_REGION: ${AWS_REGION:-eu-west-2}
+      DEFAULT_CURRENCY: ${DEFAULT_CURRENCY:-GBP}
+      TRUST_PROXY_HOPS: "2"   # ALB -> nginx -> api
+
+  web:
+    build: ./web
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"   # ALB target; terminate TLS at the ALB (ACM certificate)
+
+volumes:
+  pgdata:

@@ -1,0 +1,49 @@
+#!/bin/bash
+set -euxo pipefail
+exec > >(tee -a /var/log/ledgerai-bootstrap.log) 2>&1
+
+dnf install -y docker unzip cronie
+systemctl enable --now docker crond
+
+# ---- database volume (second EBS disk) ----
+ROOT_DISK=$(lsblk -no PKNAME "$(findmnt -n -o SOURCE /)")
+DEV=""
+for i in $(seq 1 60); do
+  CANDIDATE=$(lsblk -dno NAME,TYPE | awk '$2=="disk"{print $1}' | grep -vx "$ROOT_DISK" | head -1 || true)
+  if [ -n "$CANDIDATE" ]; then DEV="/dev/$CANDIDATE"; break; fi
+  sleep 2
+done
+[ -n "$DEV" ] || { echo "data volume not found" >&2; exit 1; }
+
+blkid "$DEV" || mkfs.xfs "$DEV"
+mkdir -p /data
+UUID=$(blkid -s UUID -o value "$DEV")
+grep -q "$UUID" /etc/fstab || echo "UUID=$UUID /data xfs defaults,nofail 0 2" >> /etc/fstab
+mount -a
+mkdir -p /data/postgres /opt/ledgerai
+
+# ---- deploy + backup scripts ----
+cat > /opt/ledgerai/instance.conf <<'CONF'
+NAME=${name}
+REGION=${region}
+BUCKET=${bucket}
+CONF
+
+cat > /opt/ledgerai/deploy.sh <<'DEPLOY_SCRIPT'
+${deploy_sh}
+DEPLOY_SCRIPT
+
+cat > /opt/ledgerai/backup.sh <<'BACKUP_SCRIPT'
+${backup_sh}
+BACKUP_SCRIPT
+
+chmod +x /opt/ledgerai/deploy.sh /opt/ledgerai/backup.sh
+echo "0 3 * * * root /opt/ledgerai/backup.sh >> /var/log/ledgerai-backup.log 2>&1" > /etc/cron.d/ledgerai-backup
+
+# ---- first deployment (retry: the Elastic IP may swap the public address while this starts) ----
+for attempt in 1 2 3 4; do
+  /opt/ledgerai/deploy.sh && exit 0
+  echo "deploy attempt $attempt failed; retrying" >&2
+  sleep 15
+done
+exit 1

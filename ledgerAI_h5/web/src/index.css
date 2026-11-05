@@ -1,0 +1,101 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', system-ui, sans-serif;
+  --color-ios-blue: #007aff;
+  --color-ios-green: #34c759;
+  --color-ios-red: #ff3b30;
+  --color-ios-orange: #ff9500;
+  --color-ios-bg: #f2f2f7;
+  --color-ios-label: #000;
+  --color-ios-secondary: #8e8e93;
+  --color-ios-fill: rgba(118, 118, 128, 0.12);
+}
+
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --sep: rgba(60, 60, 67, 0.29);
+}
+
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--color-ios-bg);
+  color: #000;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+button { cursor: pointer; }
+input, select, button { font: inherit; }
+/* 16px+ inputs prevent iOS Safari zoom-on-focus */
+input, select { font-size: 17px; }
+
+/* Translucent bars (navigation / tab bar) */
+.ios-bar {
+  background: rgba(249, 249, 249, 0.86);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+}
+
+/* Plain rounded card (no row separators) */
+.ios-card { background: #fff; border-radius: 10px; }
+
+/* Inset grouped list: rounded card, hairline separators inset from the left */
+.ios-group { background: #fff; border-radius: 10px; overflow: hidden; }
+.ios-group > * { position: relative; }
+.ios-group > * + *::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 16px;
+  right: 0;
+  height: 0.5px;
+  background: var(--sep);
+}
+.ios-group > .full-sep::before { left: 0; }
+
+.ios-header {
+  padding: 0 16px 6px;
+  font-size: 13px;
+  text-transform: uppercase;
+  color: var(--color-ios-secondary);
+  letter-spacing: -0.08px;
+}
+
+.ios-press { transition: background-color 0.12s, opacity 0.12s; }
+.ios-press:active { background-color: rgba(0, 0, 0, 0.06); }
+.ios-btn:active { opacity: 0.55; }
+
+.ios-input {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+/* Segmented control */
+.ios-segmented { background: var(--color-ios-fill); border-radius: 9px; padding: 2px; display: flex; }
+.ios-segmented button {
+  flex: 1;
+  border-radius: 7px;
+  padding: 5px 0;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background-color 0.15s;
+}
+.ios-segmented button[aria-pressed='true'] {
+  background: #fff;
+  font-weight: 600;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 3px 1px rgba(0, 0, 0, 0.04);
+}
+
+/* Bottom sheet */
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+.sheet { animation: sheet-up 0.38s cubic-bezier(0.32, 0.72, 0, 1); }
+.backdrop { animation: fade-in 0.3s ease; }
